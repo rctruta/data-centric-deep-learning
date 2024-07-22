@@ -52,6 +52,13 @@ class TrainClassifier(FlowSpec):
     # configuration files contain all hyperparameters
     config = load_config(self.config_path)
   
+
+    # a data module wraps around training, dev, and test datasets
+    dm = ReviewDataModule(config)
+
+    # a PyTorch Lightning system wraps around model logic
+    # system = SentimentClassifierSystem(config)
+
     # a callback to save best model weights
     checkpoint_callback = ModelCheckpoint(
       dirpath = config.save_dir,
@@ -68,10 +75,16 @@ class TrainClassifier(FlowSpec):
 
     # when we save these objects to a `step`, they will be available
     # for use in the next step, through not steps after.
+    self.dm = dm
+    # self.system = system
+    self.config = config
     self.trainer = trainer
     self.config = config
   
     self.next(self.train_model)
+
+  def create_fresh_system(self):
+    return SentimentClassifierSystem(self.config)
 
   @step
   def train_model(self):
@@ -86,6 +99,8 @@ class TrainClassifier(FlowSpec):
     # Call `fit` on the trainer with `system` and `dm`.
     # Our solution is one line.
     self.trainer.fit(system, dm)
+    # self.trainer.fit(self.system, self.dm)
+    self.trainer.fit(self.create_fresh_system(), self.dm)
 
     self.next(self.offline_test)
 
@@ -100,6 +115,11 @@ class TrainClassifier(FlowSpec):
     self.trainer.test(system, dm, ckpt_path = 'best')
     results = system.test_results
 
+    # self.trainer.test(self.system, self.dm, ckpt_path = 'best')
+    # results = self.system.test_results
+    system = self.create_fresh_system()
+    self.trainer.test(system, self.dm, ckpt_path = 'best')
+    results = system.test_results
     # print results to command line
     pprint(results)
 
