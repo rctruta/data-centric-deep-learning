@@ -9,3 +9,10 @@ This project will be using production deep learning tools to reliably evaluate d
 ## Warmup
 
 If you haven't yet, please do the [tutorial exercises](https://docs.metaflow.org/getting-started/tutorials) for MetaFlow. 
+
+# README
+
+BASELINE ACCURACY       : 92.2%
+INTEGRATION ACCURACY    : 80%
+REGRESSION ACCURACY     : 98%
+DIRECTIONALITY ACCURACY : 64%
