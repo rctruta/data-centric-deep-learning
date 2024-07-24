@@ -28,33 +28,37 @@ def main(args):
   # and predicted probabilities.
   monitor = MonitoringSystem(tr_vocab, tr_probs, tr_labels)
 
+  # Initialize lists to store results
+  ks_scores = []
+  hist_scores = []
+  outlier_scores = []
+
   for index in range(1, 9):
-    te_ds = ProductReviewStream(index)
-    te_dl = DataLoader(te_ds, batch_size=128, shuffle=False, num_workers=4)
-    te_vocab = te_ds.get_vocab()
-    te_probs = get_probs(system, te_dl)
+      te_ds = ProductReviewStream(index)
+      te_dl = DataLoader(te_ds, batch_size=128, shuffle=False, num_workers=4)
+      te_vocab = te_ds.get_vocab()
+      te_probs = get_probs(system, te_dl)
 
-    results = None
+      results = monitor.monitor(te_vocab, te_probs)
 
-    # Compute monitored results.
-    # 
-    # results: Dict[str, Any] - results from monitoring
-    #   keys:
-    #   --
-    #   ks_score: p-value from two-sample KS test
-    #   hist_score: intersection score between histograms
-    #   outlier_score: perc of vocabulary that is new
-    results = monitor.monitor(te_vocab, te_probs)
+      if results is not None:
+          # Append results to lists
+          ks_scores.append(results['ks_score'])
+          hist_scores.append(results['hist_score'])
+          outlier_scores.append(results['outlier_score'])
 
-    if results is not None:
-      print('\n==========================')
-      print(f'STREAM ({index} out of 8)')
-      print('==========================')
-      print(f'KS test p-value: {results["ks_score"]:.3f}')
-      print(f'Histogram intersection: {results["hist_score"]:.3f}')
-      print(f'OOD Vocab %: {results["outlier_score"]*100:.2f}')
-      print('')  # new line
-
+          # Print results
+          print('\n==========================')
+          print(f'STREAM ({index} out of 8)')
+          print('==========================')
+          print(f'KS test p-value: {results["ks_score"]:.3f}')
+          print(f'Histogram intersection: {results["hist_score"]:.3f}')
+          print(f'OOD Vocab %: {results["outlier_score"]*100:.2f}')
+          print('')  # new line
+  print(ks_scores)
+  print(hist_scores)
+  print(outlier_scores)
+# Now ks_scores, hist_scores, and outlier_scores contain results for all streams
 
 def get_probs(system, loader):
   trainer = Trainer(logger = TensorBoardLogger(save_dir=LOG_DIR))
