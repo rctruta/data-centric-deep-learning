@@ -1,5 +1,5 @@
 {
-  "model": "model.ckpt",
+  "model": "model0.ckpt",
   "batch_size": 128,
   "num_workers": 4
 }
