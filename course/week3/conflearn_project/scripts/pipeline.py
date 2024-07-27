@@ -152,11 +152,14 @@ class TrainIdentifyReview(FlowSpec):
             trainer.fit(system, train_loader)
 
             # Call `predict` on `Trainer` and the test data loader
-            probs_ = trainer.predict(system, test_loader)
-            probs_ = torch.cat([torch.softmax(output, dim=1)[:, 1] for output in probs_]).detach().cpu().numpy()
-
+            # probs_ = trainer.predict(system, test_loader)
+            # probs_ = torch.cat([torch.softmax(output, dim=1)[:, 1] for output in probs_]).detach().cpu().numpy()
+            probs_ = trainer.predict(system, dataloaders=test_loader)
+            probs_ = torch.cat(probs_).squeeze(1).numpy()
             # Convert probabilities back to numpy (make sure 1D)
             probs[test_index] = probs_
+
+            assert probs_ is not None, "`probs_` is not defined."
 
         # create a single dataframe with all input features
         all_df = pd.concat([
@@ -174,6 +177,7 @@ class TrainIdentifyReview(FlowSpec):
         self.all_df = all_df
         self.next(self.inspect)
 
+
     @step
     def inspect(self):
         r"""Use confidence learning over examples to identify labels that 
@@ -183,8 +187,11 @@ class TrainIdentifyReview(FlowSpec):
         prob = np.stack([1 - prob, prob]).T
 
         # rank label indices by issues
-        ranked_label_issues = find_label_issues(self.all_df.label, prob)
-
+        ranked_label_issues = find_label_issues(
+            np.asarray(self.all_df.label),
+            prob,
+            return_indices_ranked_by = "self_confidence",
+            )
         assert ranked_label_issues is not None, "`ranked_label_issues` not defined."
 
         # save this to class
