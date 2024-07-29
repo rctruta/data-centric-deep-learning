@@ -33,27 +33,4 @@ These projects are best done through Github codespaces.
 1. Fork this repo (leave box checked for "Copy the main branch only")
 2. We recommend using Github Codespaces. If you click the green "Code" button at the top right of this page, you should be able to enter a dev environment for completing this assignment.
 
-## Final Results
-
-### Testing
-
-| Metric                    | Accuracy |
-|---------------------------|----------|
-| BASELINE ACCURACY         | 92.2%    |
-| INTEGRATION ACCURACY      | 80%      |
-| REGRESSION ACCURACY       | 98%      |
-| DIRECTIONALITY ACCURACY   | 64%      |
-
-
-### Monitoring
-
-| Metric                    | Accuracy |
-|---------------------------|----------|
-| BASELINE ACCURACY         | 88.28%   |
-| RETRAINED ACCURACY        | 86.62%   |
-|                           |          |
-| BASELINE ACCURACY ENGLISH | 88.28%   |
-| BASELINE ACCURACY SPANISH | 54.44%   |
-| RETRAINED ACCURACY ENGLISH| 86.06%   |
-| RETRAINED ACCURACY SPANISH| 71.88%   |
 
