@@ -65,6 +65,7 @@ class BuildEvaluationSet(FlowSpec):
         # Save the generated question (as a string) into the `question` variable.
         # TODO
         # ===========================
+        question = query_openai(self.openai_api_key, get_question_prompt(chunk))
         assert len(question) > 0, f"Did you complete the coding section in `write_questions`?"
         questions.append(question)
         doc_ids.append(doc_id) # save the doc id for each 
@@ -94,6 +95,13 @@ class BuildEvaluationSet(FlowSpec):
       #       Set the rating to 0 if integer casting fails.
       # TODO
       # ===========================
+
+      rating = query_openai(self.openai_api_key, get_question_judge_prompt(self.questions[i], self.contexts[i]))
+      try:
+        rating = int(rating)
+      except:
+        rating = 0
+
       assert rating >= 0, f"Did you complete the coding section in `grade_questions`?"
       ratings.append(rating)
 
@@ -118,6 +126,8 @@ class BuildEvaluationSet(FlowSpec):
       # See `rag/prompts` for a bank of relevant prompts to use. You may edit any prompts in there.
       # TODO
       # ===========================
+      hypo_answer = query_openai(self.openai_api_key, get_hyde_response_prompt(self.questions[i]))
+
       assert len(hypo_answer) > 0, f"Did you complete the coding section in `write_hypothetical_answers`?"
       hypo_answers.append(hypo_answer)
 
