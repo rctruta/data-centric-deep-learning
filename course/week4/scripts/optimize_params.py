@@ -71,6 +71,21 @@ class OptimizeRagParams(FlowSpec):
     # over 100,000s but this should illustruate the point.
     # TODO
     # ===========================
+    embeddings = ["all-MiniLM-L6-v2", "thenlper/gte-small"]
+    text_search_weights = [0, 0.5]
+    hyde_embeddings_options = [False, True]
+
+    hparams = [
+      DotMap({
+              "embedding": embedding,
+              "text_search_weight": weight,
+              "hyde_embeddings": hyde_embeddings,
+      })
+      for embedding in embeddings
+      for weight in text_search_weights
+      for hyde_embeddings in hyde_embeddings_options
+    ]
+    
     assert len(hparams) > 0, "Remember to complete the code in `get_search_space`"
     assert len(hparams) == 8, "You should have 8 configurations" 
     self.hparams = hparams
@@ -108,6 +123,26 @@ class OptimizeRagParams(FlowSpec):
       #      +1 to `hits` if it does. +0 to `hits` if not.
       # TODO
       # ===========================
+
+      if self.input.hyde_embeddings:
+        query = questions["hypo_answers"].iloc[i]
+      else:
+        query = question
+      question_embedding = embedding_model.encode(query).tolist()
+     
+      # Retrieve top-3 documents
+      retrieved_docs = retrieve_documents(
+          api_key=self.starpoint_api_key,
+          collection_name=collection_name,
+          query_embedding=question_embedding,
+          query=question,
+          top_k=3,
+          text_search_weight=self.input.text_search_weight,
+      )
+
+      # Check if the ground truth doc_id is in the top-3 results
+      if gt_id in [doc['metadata']['doc_id'] for doc in retrieved_docs]:
+        hits += 1
 
     hit_rate = hits / float(len(questions))
     self.hit_rate = hit_rate  # save to class
